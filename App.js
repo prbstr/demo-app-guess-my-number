@@ -1,23 +1,32 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ImageBackground, SafeAreaView, StyleSheet } from "react-native";
 import Colors from "./constants/Colors";
 import GameOverScreen from "./screens/GameOver";
 import GameScreen from "./screens/GameScreen";
 import StartGameScreen from "./screens/StartGame";
-import { useFonts } from "expo-font";
-import AppLoading from "expo-app-loading";
+import * as SplashScreen from "expo-splash-screen";
+import * as Font from "expo-font";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [route, setRoute] = useState();
   const [userNumber, setUserNumber] = useState();
-  const [fontsLoaded] = useFonts({
+  const [numberOfRounds, setNumberOfRounds] = useState(0);
+  const [fontsLoaded, fontError] = Font.useFonts({
     "open-sans": require("./assets/fonts/OpenSans-Regular.ttf"),
     "open-sans-bold": require("./assets/fonts/OpenSans-Bold.ttf"),
   });
 
-  if (!fontsLoaded) {
-    return <AppLoading />;
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
   }
 
   const onPickNumberHandler = (pickedNumber) => {
@@ -29,24 +38,36 @@ export default function App() {
     setRoute(2);
   };
 
+  const startNewGameHandler = () => {
+    setNumberOfRounds(0);
+    setRoute(0);
+  };
+
   let screen = <StartGameScreen onPickNumber={onPickNumberHandler} />;
 
   if (route === 1) {
     screen = (
       <GameScreen
         userNumber={userNumber}
+        setNumberOfRounds={setNumberOfRounds}
         onGameOverHandler={onGameOverHandler}
       />
     );
   } else if (route === 2) {
-    screen = <GameOverScreen />;
-    setTimeout(() => setRoute(0), 3000);
+    screen = (
+      <GameOverScreen
+        userNumber={userNumber}
+        numberOfRounds={numberOfRounds}
+        onStartNewGame={startNewGameHandler}
+      />
+    );
   }
 
   return (
     <LinearGradient
       colors={[Colors.primary700, Colors.accent500]}
       style={styles.container}
+      onLayout={onLayoutRootView}
     >
       <ImageBackground
         style={styles.container}
@@ -65,6 +86,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rootScreen: {
+    flex: 1,
     backgroundColor: Colors.accent500,
   },
   backgroundImage: {

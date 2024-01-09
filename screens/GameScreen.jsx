@@ -21,10 +21,10 @@ const generateRandomNumberBetween = (min, max, exclude) => {
 let minBoundary = 1;
 let maxBoundary = 100;
 
-const GameScreen = ({ userNumber, onGameOverHandler }) => {
+const GameScreen = ({ userNumber, onGameOverHandler, setNumberOfRounds }) => {
   const initialGuess = generateRandomNumberBetween(1, 100, userNumber);
   const [currentGuess, setCurrentGuess] = useState(initialGuess);
-  const [guesses, setGuesses] = useState([]);
+  const [guesses, setGuesses] = useState([initialGuess]);
 
   useEffect(() => {
     if (currentGuess == userNumber) {
@@ -32,12 +32,17 @@ const GameScreen = ({ userNumber, onGameOverHandler }) => {
     }
   }, [currentGuess, userNumber, onGameOverHandler]);
 
+  useEffect(() => {
+    minBoundary = 1;
+    maxBoundary = 100;
+  }, []);
+
   const nextGuessHandler = (direction) => {
     if (
       (direction === 1 && currentGuess < userNumber) ||
       (direction === 2 && currentGuess > userNumber)
     ) {
-      Alert.alert("Liar", "You are playing", [
+      Alert.alert("Untrue", "Be honest", [
         {
           text: "Sorry",
           style: "cancel",
@@ -57,7 +62,8 @@ const GameScreen = ({ userNumber, onGameOverHandler }) => {
       currentGuess
     );
     setCurrentGuess(newRandomNumber);
-    setGuesses([...guesses, newRandomNumber]);
+    setNumberOfRounds(guesses.length);
+    setGuesses((prevGuesses) => [newRandomNumber, ...prevGuesses]);
   };
 
   return (
@@ -69,10 +75,18 @@ const GameScreen = ({ userNumber, onGameOverHandler }) => {
         <View style={styles.buttonsContainer}>
           <View style={styles.buttonContainer}>
             <PrimaryButton onPress={() => nextGuessHandler(1)}>
-              <Ionicons name="md-remove" size={24} color="white" />
+              <Ionicons
+                name="md-remove"
+                size={24}
+                color="white"
+              />
             </PrimaryButton>
             <PrimaryButton onPress={() => nextGuessHandler(2)}>
-              <Ionicons name="md-add" size={24} color="white" />
+              <Ionicons
+                name="md-add"
+                size={24}
+                color="white"
+              />
             </PrimaryButton>
           </View>
         </View>
@@ -80,7 +94,10 @@ const GameScreen = ({ userNumber, onGameOverHandler }) => {
       <View>
         {guesses.map((guess) => {
           return (
-            <Text key={guess} style={styles.guessText}>
+            <Text
+              key={guess}
+              style={styles.guessText}
+            >
               The computer has guessed {guess}
             </Text>
           );
@@ -92,6 +109,7 @@ const GameScreen = ({ userNumber, onGameOverHandler }) => {
 
 const styles = StyleSheet.create({
   screen: {
+    marginTop: 100,
     padding: 24,
   },
   guessText: {
