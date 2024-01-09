@@ -1,0 +1,9 @@
+{
+  "eslint.rules.customizations": [
+
+  ],
+  "emmet.showAbbreviationSuggestions": false,
+  "emmet.showExpandedAbbreviation": "never",
+  "eslint.debug": true,
+  "eslint.format.enable": true
+}
